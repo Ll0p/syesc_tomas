@@ -1,5 +1,9 @@
 import pygame
 
+def salir(evento, datos_individuales):
+    if evento.type == pygame.QUIT:
+        datos_individuales["seguir"] = False
+
 def importar_imagen(path: str, tamaño: tuple[int]):
     imagen = pygame.image.load(path)
     return pygame.transform.scale(imagen, tamaño)

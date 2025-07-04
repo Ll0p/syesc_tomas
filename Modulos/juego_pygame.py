@@ -1,6 +1,6 @@
 def jugar_pygame(preguntas, path, tablero) -> None:
     import pygame
-    from Modulos.recursos import crear_sonido, crear_font, importar_imagen
+    from Modulos.recursos import salir, crear_sonido, crear_font, importar_imagen
     from Modulos.visuales import dibujar_visuales
     from Modulos.interacciones import interaccion_mouse, interactuar_ingreso_teclado
     from Modulos.datos_jugador import crear_estado_jugador
@@ -32,8 +32,7 @@ def jugar_pygame(preguntas, path, tablero) -> None:
     while datos_individuales["seguir"]:
         lista_eventos = pygame.event.get()
         for evento in lista_eventos:
-            if evento.type == pygame.QUIT:
-                datos_individuales["seguir"] = False
+            salir(evento, datos_individuales)
 
             interaccion_mouse(evento, rects_menu, rects_juego, rect_salida, sonido_click, tablero, path, datos_individuales, datos_base)
 
