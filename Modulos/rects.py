@@ -19,30 +19,13 @@ rect_salida = pygame.Rect(400, 0, 100, 50)
 
 ##################################################################
 
+rects_tablero = (pygame.Rect(54,65,25,25),pygame.Rect(94,65,25,25),pygame.Rect(134,65,25,25),pygame.Rect(174,65,25,25),pygame.Rect(214,65,25,25),pygame.Rect(254,65,25,25),pygame.Rect(294,65,25,25),pygame.Rect(334,65,25,25),pygame.Rect(374,65,25,25),pygame.Rect(414,65,25,25),
+                pygame.Rect(54,105,25,25),pygame.Rect(94,105,25,25),pygame.Rect(134,105,25,25),pygame.Rect(174,105,25,25),pygame.Rect(214,105,25,25),pygame.Rect(254,105,25,25),pygame.Rect(294,105,25,25),pygame.Rect(334,105,25,25),pygame.Rect(374,105,25,25),pygame.Rect(414,105,25,25),
+                pygame.Rect(54,145,25,25),pygame.Rect(94,145,25,25),pygame.Rect(134,145,25,25),pygame.Rect(174,145,25,25),pygame.Rect(214,145,25,25),pygame.Rect(254,145,25,25),pygame.Rect(294,145,25,25),pygame.Rect(334,145,25,25),pygame.Rect(374,145,25,25),pygame.Rect(414,145,25,25),pygame.Rect(454,145,25,25))
+
 rect_steve = pygame.Rect(254,105,25,25)
 rects_tnt = {
 "1" : [pygame.Rect(94,65,25,25),pygame.Rect(94,105,25,25),pygame.Rect(254,105,25,25),pygame.Rect(294,105,25,25),pygame.Rect(54,145,25,25),pygame.Rect(334,145,25,25)],
 "2" : [pygame.Rect(214,105,25,25),pygame.Rect(174,145,25,25)],
 "3" : [pygame.Rect(254,65,25,25)]
 }
-
-def mover_por_respuesta_pygame(rect_steve, respuesta: bool) -> None:
-    if respuesta:
-        rect_steve.x += 40
-    else:
-        rect_steve.x -= 40
-
-def aplicar_borde(rect_steve, limite_izq, limite_der) -> None:
-    if rect_steve.x > limite_der:
-        rect_steve.x = limite_izq
-        rect_steve.y -= 40
-    elif rect_steve.x < limite_izq:
-        rect_steve.x = limite_der - rect_steve.size
-        rect_steve.y += 40
-
-def aplicar_efecto_casilla_pygame(rects_tnt, rect_steve):
-    pass
-
-def modificar_posicion_steve(rect_steve, respuesta: bool):
-    mover_por_respuesta_pygame(rect_steve, respuesta)
-    aplicar_borde(rect_steve)

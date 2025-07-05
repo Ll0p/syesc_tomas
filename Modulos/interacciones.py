@@ -14,7 +14,7 @@ def resetear_datos(datos_indiv: dict, datos_base: dict) -> None:
     for clave in datos_indiv:
         datos_indiv[clave] = copy.deepcopy(datos_base[clave])
 
-def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, sonido_click, tablero: tuple[int], path: str, datos_indiv: dict, datos_base: dict) -> None:
+def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, sonido_click, tablero: tuple[int], path: str, datos_indiv: dict, datos_base: dict, rects_tablero: tuple) -> None:
     import random
     from Datos.funciones_consola import ingresar_datos_usuario, verificar_opcion, modificar_posicion, verificar_ganador_perdedor_pygame, verificar_respuesta, retirar_pregunta
     if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1: # Que evento.button == 1 significa que toqué click izquierdo
@@ -47,6 +47,7 @@ def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, 
             if datos_indiv["pregunta_actual"] != None and verificar_opcion(datos_indiv["respuesta"], ("a","b","c")):
                 es_correcta = verificar_respuesta(datos_indiv["pregunta_actual"], datos_indiv["respuesta"])
                 datos_indiv["posicion"] = modificar_posicion(tablero, datos_indiv["posicion"], es_correcta)
+                datos_indiv["rect_posicion"] = rects_tablero[datos_indiv["posicion"]]
                 limite = verificar_ganador_perdedor_pygame(datos_indiv["posicion"], tablero)
                 if len(datos_indiv["copia_preguntas"]) > 0 and not limite:
                     indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)

@@ -28,13 +28,14 @@ def dibujar_menu(pantalla, rectangulo_c, rectangulo_l, fuente_grande) -> None:
 
 ###################################### JUEGO_VISUAL ######################################
 
-def mostrar_imagenes_juego(pantalla, fondo_piedra, fondo_madera, tablero_imagen, tnt) -> None:
+def mostrar_imagenes_juego(pantalla, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt: dict[str, list], rect_posicion) -> None:
     pantalla.blit(fondo_piedra, (0, 230))
     pantalla.blit(fondo_madera, (0, 310))
     pantalla.blit(tablero_imagen, (45, 55))
-    posiciones = [(94,65),(254,65),(94,105),(214,105),(254,105),(294,105),(54,145),(174,145),(334,145)]
-    for posicion in posiciones:
-        pantalla.blit(tnt, posicion)
+    for key in rects_tnt:
+        for tnt in rects_tnt[key]:
+            pantalla.blit(imagen_tnt, (tnt.x, tnt.y))
+    pantalla.blit(imagen_steve, (rect_posicion.x, rect_posicion.y))
 
 def dibujar_lineas_juego(pantalla, color: tuple) -> None:
     pygame.draw.line(pantalla, color, (0, 230), (500, 230), 10)
@@ -60,9 +61,9 @@ def mostrar_preguntas(pantalla, fuente_chica, color: tuple, pregunta_actual: dic
     for i in range(len(lista_pos_y)):
         pantalla.blit(fuente_chica.render(textos[i], True, color), (20, lista_pos_y[i]))
 
-def dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, tnt, pregunta_actual: dict[str, str]) -> None:
+def dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt: dict[str, list], pregunta_actual: dict[str, str], rect_posicion) -> None:
     from Colores import NEGRO, GRIS_MC
-    mostrar_imagenes_juego(pantalla, fondo_piedra, fondo_madera, tablero_imagen, tnt)
+    mostrar_imagenes_juego(pantalla, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve ,rects_tnt, rect_posicion)
     dibujar_lineas_juego(pantalla, NEGRO)
     meter_rectangulos_juego(pantalla, rectangulo_c)
     mostrar_textos_rects_juego(pantalla, fuente_grande, GRIS_MC)
@@ -116,7 +117,7 @@ def dibujar_resultados(pantalla, rectangulo_c, rect_salida, fuente_chica, fuente
 
 ######################################### VISUAL #########################################
 
-def dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu: dict, rects_juego: dict, rect_salida, fuente_chica, fuente_grande, fondo_tierra, fondo_piedra, fondo_madera, tablero_imagen, tnt, path: str, datos_indiv: dict) -> None:
+def dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu: dict, rects_juego: dict, rect_salida, fuente_chica, fuente_grande, fondo_tierra, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt: dict[str, list], path: str, datos_indiv: dict) -> None:
     meter_fondo(pantalla, fondo_tierra)
     if datos_indiv["estado"] == "Menu":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rects_menu["1"].size)
@@ -130,7 +131,7 @@ def dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu: dict, rec
 
     elif datos_indiv["estado"] == "Jugar":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rects_juego["a"].size)
-        dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, tnt, datos_indiv["pregunta_actual"])
+        dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt, datos_indiv["pregunta_actual"], datos_indiv["rect_posicion"])
 
     elif datos_indiv["estado"] == "Resultados":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rect_salida.size)
