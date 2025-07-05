@@ -96,6 +96,20 @@ def dibujar_ingreso(pantalla, rectangulo_c, rectangulo_l, rect_salida, fuente_ch
 
 ##########################################################################################
 
+############################## RESULTADO_VISUAL_INDIVIDUAL ###############################
+
+def mostrar_fin(pantalla, fuente_grande, fuente_chica, nombre, puntaje, color):
+    pantalla.blit(fuente_grande.render("FIN DEL JUEGO",True,color), (125,150))
+    pantalla.blit(fuente_chica.render(f"Usuario: {nombre}", True, color), (150,200))
+    pantalla.blit(fuente_chica.render(f"Puntaje: {puntaje}", True, color), (150,220))
+
+def dibujar_puntaje(pantalla, fuente_grande, fuente_chica, rectangulo_c, rect_salida, nombre: str, puntaje: int):
+    from Colores import GRIS_MC
+    mostrar_salida(pantalla, rectangulo_c, rect_salida, fuente_grande, GRIS_MC)
+    mostrar_fin(pantalla, fuente_grande, fuente_chica, nombre, puntaje, GRIS_MC)
+
+##########################################################################################
+
 #################################### RESULTADO_VISUAL ####################################
 
 def mostrar_salida(pantalla, rectangulo_c, rect_salida, fuente_grande, color) -> None:
@@ -132,6 +146,10 @@ def dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu: dict, rec
     elif datos_indiv["estado"] == "Jugar":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rects_juego["a"].size)
         dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt, datos_indiv["pregunta_actual"], datos_indiv["rect_posicion"])
+
+    elif datos_indiv["estado"] == "Puntaje":
+        rectangulo_c = pygame.transform.scale(rectangulo_c, rect_salida.size)
+        dibujar_puntaje(pantalla, fuente_grande, fuente_chica, rectangulo_c, rect_salida, datos_indiv["usuario"], datos_indiv["posicion"])
 
     elif datos_indiv["estado"] == "Resultados":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rect_salida.size)

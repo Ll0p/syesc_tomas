@@ -31,6 +31,10 @@ def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, 
                 datos_indiv["usuario"] = ""
                 datos_indiv["estado"] = "Menu"
 
+        elif datos_indiv["estado"] == "Puntaje":
+            if clickeo_en(rect_salida, evento.pos, sonido_click):
+                resetear_datos(datos_indiv, datos_base)
+
         elif datos_indiv["estado"] == "Jugar":
             datos_indiv["respuesta"] = datos_base["respuesta"]
             if clickeo_en(rects_juego["a"], evento.pos, sonido_click):
@@ -41,7 +45,7 @@ def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, 
                 datos_indiv["respuesta"] = "c"
             elif clickeo_en(rects_juego["salir"], evento.pos, sonido_click):
                 ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
-                resetear_datos(datos_indiv, datos_base)
+                datos_indiv["estado"] = "Puntaje"
                 return None
 
             if datos_indiv["pregunta_actual"] != None and verificar_opcion(datos_indiv["respuesta"], ("a","b","c")):
@@ -53,8 +57,8 @@ def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, 
                     indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
                     datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
                 else:
-                    ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"]) 
-                    resetear_datos(datos_indiv, datos_base)
+                    ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
+                    datos_indiv["estado"] = "Puntaje"
 
 ####################################################################################################################################################################################
 
