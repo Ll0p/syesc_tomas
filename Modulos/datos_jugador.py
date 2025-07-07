@@ -5,6 +5,7 @@ def crear_estado_jugador(preguntas: list[dict]) -> dict:
         "estado" : "Menu",
         "usuario" : "",
         "posicion" : 15,
+        "contador" : 5,
         "rect_posicion": pygame.Rect(254,105,25,25),
         "respuesta" : None,
         "mensaje_error" : "",
@@ -13,3 +14,6 @@ def crear_estado_jugador(preguntas: list[dict]) -> dict:
         "pregunta_actual" : None,
         "seguir" : True
     }
+
+def reiniciar_contador():
+    return "3"

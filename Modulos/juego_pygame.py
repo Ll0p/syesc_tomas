@@ -1,9 +1,9 @@
 def jugar_pygame(preguntas, path, tablero) -> None:
     import pygame
-    from Modulos.recursos import salir, crear_sonido, crear_font, importar_imagen
+    from Modulos.recursos import crear_sonido, crear_font, importar_imagen
     from Modulos.visuales import dibujar_visuales
-    from Modulos.interacciones import interaccion_mouse, interactuar_ingreso_teclado
-    from Modulos.datos_jugador import crear_estado_jugador
+    from Modulos.interacciones import salir, interaccion_mouse, interactuar_ingreso_teclado, procesar_usuario
+    from Modulos.datos_jugador import crear_estado_jugador, reiniciar_contador
     from Modulos.rects import rects_juego, rect_salida, rects_menu, rects_tnt, rects_tablero
     from Modulos.tamaños import tamaño_fondos, tamaño_tablero, tamaño_objeto
     pygame.init()
@@ -30,16 +30,29 @@ def jugar_pygame(preguntas, path, tablero) -> None:
     datos_individuales = crear_estado_jugador(preguntas)
     datos_base = crear_estado_jugador(preguntas)
 
+    tick = pygame.USEREVENT
+    pygame.time.set_timer(tick, 1000)
+    contador_ref = {"valor": reiniciar_contador()}
+
     while datos_individuales["seguir"]:
         lista_eventos = pygame.event.get()
         for evento in lista_eventos:
             salir(evento, datos_individuales)
 
-            interaccion_mouse(evento, rects_menu, rects_juego, rect_salida, sonido_click, tablero, path, datos_individuales, datos_base, rects_tablero)
+            interaccion_mouse(evento, rects_menu, rects_juego, rect_salida, sonido_click, tablero, path, datos_individuales, datos_base, rects_tablero, contador_ref)
 
             interactuar_ingreso_teclado(evento, datos_individuales)
 
-        dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu, rects_juego, rect_salida, fuente_chica, fuente_grande, fondo_tierra, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt, path, datos_individuales)
+            if evento.type == tick and datos_individuales["estado"] == "Jugar":
+                contador_ref["valor"] = str(int(contador_ref["valor"]) - 1)
+                
+                if int(contador_ref["valor"]) == 0 and datos_individuales["respuesta"] == None:
+                    datos_individuales["respuesta"] = "d"
+                    procesar_usuario(datos_individuales, tablero, rects_tablero, path)
+                    contador_ref["valor"] = reiniciar_contador()
+                    datos_individuales["respuesta"] = None
+
+        dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu, rects_juego, rect_salida, fuente_chica, fuente_grande, fondo_tierra, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt, path, datos_individuales, contador_ref["valor"])
 
         pygame.display.flip()
 
