@@ -1,23 +1,44 @@
 import pygame
 
-def salir(evento, datos_individuales):
+def salir(evento, datos_individuales: dict) -> None:
     if evento.type == pygame.QUIT:
         datos_individuales["seguir"] = False
 
-def introducir_timer(evento, tick, contador: str, datos_indiv: dict):
-    import random
-    from Datos.funciones_consola import retirar_pregunta
-    if evento.type == tick and datos_indiv["estado"] == "Jugar":
-        contador = int(contador) - 1 
-        if int(contador) == 0:
-            contador = "15"
-            datos_indiv["respuesta"] = "d"
-            indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
-            datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
+def introducir_timer(evento, tick, sonido_click, contador_ref: dict[str, str], datos_individuales: dict, datos_base: dict, tablero: tuple[int], rects_tablero: tuple, path: str) -> None:
+    """ Introduce un contador al juego
 
-################################### INTERACCIÓN_MOUSE ####################################
+    Argumentos:
+        evento (_type_): El evento actual
+        tick (_type_): El evento tick
+        sonido_click (_type_): El sonido click
+        contador_ref (dict[str, str]): El diccionario con la referencia del contador
+        datos_individuales (dict): Los datos individuales del usuario
+        datos_base (dict): Los datos predeterminados del juego
+        tablero (tuple[int]): El tablero del juego
+        rects_tablero (tuple): Los rects del tablero en pantalla
+        path (str): El path CSV
+    """
+    from Modulos.datos_jugador import reiniciar_contador 
+    if evento.type == tick and datos_individuales["estado"] == "Jugar":
+        contador_ref["valor"] = str(int(contador_ref["valor"]) - 1)
+        if int(contador_ref["valor"]) == 0 and datos_individuales["respuesta"] == None:
+            datos_individuales["respuesta"] = "d"
+            sonido_click.play()
+            procesar_usuario(datos_individuales, tablero, rects_tablero, path)
+            contador_ref["valor"] = reiniciar_contador(datos_base["contador"])
+            datos_individuales["respuesta"] = datos_base["respuesta"]
 
 def clickeo_en(rect: pygame.Rect, pos: tuple[int, int], sonido) -> bool:
+    """ Determina si colisiona un rect en determinada posicion
+
+    Argumentos:
+        rect (pygame.Rect): El rect elegido
+        pos (tuple[int, int]): La posicion del con la que se verifica si colisiona
+        sonido (_type_): Un sonido para ejecutar en caso de que ocurra
+
+    Retorna:
+        bool: True en caso de colisionar y viceversa
+    """
     retorno = False
     if rect.collidepoint(pos):
         sonido.play()
@@ -25,11 +46,27 @@ def clickeo_en(rect: pygame.Rect, pos: tuple[int, int], sonido) -> bool:
     return retorno
 
 def resetear_datos(datos_indiv: dict, datos_base: dict) -> None:
+    """ Resetea los datos del usuario
+
+    Argumentos:
+        datos_indiv (dict): Los datos individuales del usuario
+        datos_base (dict): Los datos predeterminados del juego
+    """
     import copy
     for clave in datos_indiv:
         datos_indiv[clave] = copy.deepcopy(datos_base[clave])
 
-def interaccion_mouse_menu(rects_menu, evento, sonido_click, datos_indiv: dict):
+################################### INTERACCIÓN_MOUSE ####################################
+
+def interaccion_mouse_menu(rects_menu: dict, evento, sonido_click, datos_indiv: dict) -> None:
+    """ Interpreta los clicks en el menú
+
+    Argumentos:
+        rects_menu (_type_): Diccionario con rects del menú
+        evento (_type_): El evento actual
+        sonido_click (_type_): Sonido de click
+        datos_indiv (dict): Los datos individuales del usuario
+    """
     if clickeo_en(rects_menu["1"], evento.pos, sonido_click):
         datos_indiv["estado"] = "Ingreso"
     elif clickeo_en(rects_menu["2"], evento.pos, sonido_click):
@@ -37,20 +74,44 @@ def interaccion_mouse_menu(rects_menu, evento, sonido_click, datos_indiv: dict):
     elif clickeo_en(rects_menu["3"], evento.pos, sonido_click):
         datos_indiv["seguir"] = False
 
-def interaccion_mouse_ingreso_y_resultados(rect_salida, evento, sonido_click, datos_indiv: dict):
+def interaccion_mouse_ingreso_y_resultados(rect_salida, evento, sonido_click, datos_indiv: dict) -> None:
+    """ Interpreta los clicks en el ingreso de nombre y la pantalla de resultados
+
+    Argumentos:
+        rect_salida (_type_): El rect de la salida
+        evento (_type_): El evento actual
+        sonido_click (_type_): Sonido de click
+        datos_indiv (dict): Los datos individuales del usuario
+    """
     if clickeo_en(rect_salida, evento.pos, sonido_click):
         datos_indiv["usuario"] = ""
         datos_indiv["estado"] = "Menu"
 
-def interaccion_mouse_puntaje(rect_salida, evento, sonido_click, datos_indiv: dict, datos_base: dict):
+def interaccion_mouse_puntaje(rect_salida, evento, sonido_click, datos_indiv: dict, datos_base: dict) -> None:
+    """ Interpreta los clicks en la pantalla de puntaje
+
+    Argumentos:
+        rect_salida (_type_): _description_
+        evento (_type_): _description_
+        sonido_click (_type_): _description_
+        datos_indiv (dict): _description_
+        datos_base (dict): _description_
+    """
     if clickeo_en(rect_salida, evento.pos, sonido_click):
         resetear_datos(datos_indiv, datos_base)
 
-def procesar_usuario(datos_indiv: dict, tablero: tuple, rects_tablero: tuple, path: str):
+def procesar_usuario(datos_indiv: dict, tablero: tuple[int], rects_tablero: tuple, path: str) -> None:
+    """ Procesa los datos del usuario y aplica las posiciones/estados correspondientes
+
+    Argumentoss:
+        datos_indiv (dict): Los datos individuales del usuario
+        tablero (tuple[int]): El tablero del juego
+        rects_tablero (tuple): Los rects del tablero en pantalla
+        path (str): El path CSV
+    """
     from Datos.funciones_consola import verificar_respuesta, modificar_posicion, verificar_ganador_perdedor_pygame, retirar_pregunta, ingresar_datos_usuario
     import random
-    es_correcta = verificar_respuesta(datos_indiv["pregunta_actual"], datos_indiv["respuesta"])
-    datos_indiv["posicion"] = modificar_posicion(tablero, datos_indiv["posicion"], es_correcta)
+    datos_indiv["posicion"] = modificar_posicion(tablero, datos_indiv["posicion"], verificar_respuesta(datos_indiv["pregunta_actual"], datos_indiv["respuesta"]))
     datos_indiv["rect_posicion"] = rects_tablero[datos_indiv["posicion"]]
     limite = verificar_ganador_perdedor_pygame(datos_indiv["posicion"], tablero)
 
@@ -61,10 +122,24 @@ def procesar_usuario(datos_indiv: dict, tablero: tuple, rects_tablero: tuple, pa
         ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
         datos_indiv["estado"] = "Puntaje"
 
-def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, sonido_click, tablero: tuple[int], path: str, datos_indiv: dict, datos_base: dict, rects_tablero: tuple, contador_ref: dict) -> None:
+def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, sonido_click, tablero: tuple[int], path: str, datos_indiv: dict, datos_base: dict, rects_tablero: tuple, contador_ref: dict[str, str]) -> None:
+    """ Interpreta todas las interacciones con el mouse en los diferentes estados y aplica cambios en base a esto
+
+    Argumentos:
+        evento (_type_): El evento actual
+        rects_menu (dict): Los rects del menu
+        rects_juego (dict): Los rects del juego
+        rect_salida (_type_): El rect de salida
+        sonido_click (_type_): El sonido click
+        tablero (tuple[int]): El tablero del juego
+        path (str): El path CSV
+        datos_indiv (dict): Los datos individuales del usuario
+        datos_base (dict): Los datos predeterminados del juego
+        rects_tablero (tuple): Los rects del tablero en pantalla
+        contador_ref (dict[str, str]): El diccionario con la referencia del contador 
+    """
     from Datos.funciones_consola import ingresar_datos_usuario, verificar_opcion
     from Modulos.datos_jugador import reiniciar_contador
-
     if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1: # Que evento.button == 1 significa que toqué click izquierdo
         if datos_indiv["estado"] == "Menu":
             interaccion_mouse_menu(rects_menu, evento, sonido_click, datos_indiv)
@@ -76,7 +151,6 @@ def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, 
             interaccion_mouse_puntaje(rect_salida, evento, sonido_click, datos_indiv, datos_base)
 
         elif datos_indiv["estado"] == "Jugar":
-            datos_indiv["respuesta"] = datos_base["respuesta"]
             if clickeo_en(rects_juego["a"], evento.pos, sonido_click):
                 datos_indiv["respuesta"] = "a"
             elif clickeo_en(rects_juego["b"], evento.pos, sonido_click):
@@ -86,30 +160,60 @@ def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, 
             elif clickeo_en(rects_juego["salir"], evento.pos, sonido_click):
                 ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
                 datos_indiv["estado"] = "Puntaje"
-                return None
+                return None # Para que no siga el programa
 
-            if datos_indiv["pregunta_actual"] != None and verificar_opcion(datos_indiv["respuesta"], ("a","b","c")):
+            if datos_indiv["pregunta_actual"] != datos_base["pregunta_actual"] and verificar_opcion(datos_indiv["respuesta"], ("a","b","c")):
                 procesar_usuario(datos_indiv, tablero, rects_tablero, path)
                 datos_indiv["respuesta"] = datos_base["respuesta"]
-                contador_ref["valor"] = reiniciar_contador()
+                contador_ref["valor"] = reiniciar_contador(datos_base["contador"])
 
 ####################################################################################################################################################################################
 
 ############################## INTERACCIÓN_INGRESO_TECLADO ###############################
 
 def borrar_letra(usuario: str) -> str:
+    """ Borra la ultima letra de una cadena (nombre del usuario)
+
+    Argumentos:
+        usuario (str): La cadena que se va a utilizar
+
+    Retorna:
+        str: La cadena sin la ultima letra
+    """
     return usuario[:-1]
 
 def verificar_alnum(caracter: str) -> bool:
+    """ Verifica si un caracter (letra) es alfanumerico
+
+    Argumentos:
+        caracter (str): El caracter a analizar
+
+    Retorna:
+        bool: True en caso de serlo y viceversa
+    """
     return caracter.isalnum()
 
-def mensaje_caracter(caracter: str) -> str:
+def modificar_mensaje(caracter: str, verificacion: callable) -> str:
+    """ Retorna un mensaje en base a el caracter (letra) analizado
+
+    Argumentos:
+        caracter (str): El caracter a analizar
+
+    Retorna:
+        str: Un mensaje en caso de no cumplir con la verificacion 
+    """
     mensaje = ""
-    if not verificar_alnum(caracter):
+    if not verificacion(caracter):
         mensaje = "Caracter no valido"
     return mensaje
 
 def interactuar_ingreso_teclado(evento, datos_indiv: dict) -> None:
+    """ Interactua con el teclado cuando el estado es "Ingreso" y determina estados
+
+    Argumentos:
+        evento (_type_): El evento actual
+        datos_indiv (dict): Los datos individuales del usuario
+    """
     import random
     from Datos.funciones_consola import verificar_nombre, retirar_pregunta
     if evento.type == pygame.KEYDOWN and datos_indiv["estado"] == "Ingreso":
@@ -125,7 +229,7 @@ def interactuar_ingreso_teclado(evento, datos_indiv: dict) -> None:
             else:
                 datos_indiv["mensaje_error"] = "No puede usar este nombre"
         else:
-            datos_indiv["mensaje_error"] = mensaje_caracter(evento.unicode)
+            datos_indiv["mensaje_error"] = modificar_mensaje(evento.unicode, verificar_alnum)
             if datos_indiv["mensaje_error"] == "":
                 datos_indiv["usuario"] += evento.unicode
 

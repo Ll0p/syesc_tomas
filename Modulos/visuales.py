@@ -61,16 +61,16 @@ def mostrar_preguntas(pantalla, fuente_chica, color: tuple, pregunta_actual: dic
     for i in range(len(lista_pos_y)):
         pantalla.blit(fuente_chica.render(textos[i], True, color), (20, lista_pos_y[i]))
 
-def mostrar_tiempo(pantalla, fuente_chica, color, contador: str):
-    pantalla.blit(fuente_chica.render(contador, True, color),(450,450))
+def mostrar_tiempo(pantalla, fuente_chica, color, contador_valor: str):
+    pantalla.blit(fuente_chica.render(contador_valor, True, color),(450,450))
 
-def dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt: dict[str, list], pregunta_actual: dict[str, str], rect_posicion, contador: str) -> None:
+def dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt: dict[str, list], pregunta_actual: dict[str, str], rect_posicion, contador_valor: str) -> None:
     from Colores import NEGRO, GRIS_MC
     mostrar_imagenes_juego(pantalla, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve ,rects_tnt, rect_posicion)
     dibujar_lineas_juego(pantalla, NEGRO)
     meter_rectangulos_juego(pantalla, rectangulo_c)
     mostrar_textos_rects_juego(pantalla, fuente_grande, GRIS_MC)
-    mostrar_tiempo(pantalla,fuente_chica,GRIS_MC,contador)
+    mostrar_tiempo(pantalla,fuente_chica,GRIS_MC,contador_valor)
     if pregunta_actual != None:
         mostrar_preguntas(pantalla, fuente_chica, GRIS_MC, pregunta_actual)
 
@@ -135,7 +135,7 @@ def dibujar_resultados(pantalla, rectangulo_c, rect_salida, fuente_chica, fuente
 
 ######################################### VISUAL #########################################
 
-def dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu: dict, rects_juego: dict, rect_salida, fuente_chica, fuente_grande, fondo_tierra, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt: dict[str, list], path: str, datos_indiv: dict, contador: dict) -> None:
+def dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu: dict, rects_juego: dict, rect_salida, fuente_chica, fuente_grande, fondo_tierra, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt: dict[str, list], path: str, datos_indiv: dict, contador_valor: str) -> None:
     meter_fondo(pantalla, fondo_tierra)
     if datos_indiv["estado"] == "Menu":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rects_menu["1"].size)
@@ -149,7 +149,7 @@ def dibujar_visuales(pantalla, rectangulo_c, rectangulo_l, rects_menu: dict, rec
 
     elif datos_indiv["estado"] == "Jugar":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rects_juego["a"].size)
-        dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt, datos_indiv["pregunta_actual"], datos_indiv["rect_posicion"], contador)
+        dibujar_juego(pantalla, rectangulo_c, fuente_grande, fuente_chica, fondo_piedra, fondo_madera, tablero_imagen, imagen_tnt, imagen_steve, rects_tnt, datos_indiv["pregunta_actual"], datos_indiv["rect_posicion"], contador_valor)
 
     elif datos_indiv["estado"] == "Puntaje":
         rectangulo_c = pygame.transform.scale(rectangulo_c, rect_salida.size)
