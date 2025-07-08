@@ -35,3 +35,5 @@ imagen_steve = importar_imagen("Recursos/Imagenes/steve.png", tamaño_objeto)
 
 rectangulo_c = pygame.image.load("Recursos/Imagenes/rectan_mine_chico.png")
 rectangulo_l = pygame.image.load("Recursos/Imagenes/rectan_mine_largo.png")
+
+##############################################################################
