@@ -182,6 +182,22 @@ def borrar_letra(usuario: str) -> str:
     """
     return usuario[:-1]
 
+def validar_usuario(datos_indiv: dict) -> None:
+    """ Analiza al usuario ingresado
+
+    Argumentos:
+        datos_indiv (dict): Los datos individuales del usuario
+    """
+    import random
+    from Datos.funciones_consola import verificar_nombre, retirar_pregunta
+    if verificar_nombre(datos_indiv["usuario"]):
+        datos_indiv["estado"] = "Jugar"
+        indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
+        datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
+        datos_indiv["mensaje_error"] = ""
+    else:
+        datos_indiv["mensaje_error"] = "No puede usar este nombre"
+
 def verificar_alnum(caracter: str) -> bool:
     """ Verifica si un caracter (letra) es alfanumerico
 
@@ -214,20 +230,13 @@ def interactuar_ingreso_teclado(evento, datos_indiv: dict) -> None:
         evento (_type_): El evento actual
         datos_indiv (dict): Los datos individuales del usuario
     """
-    import random
-    from Datos.funciones_consola import verificar_nombre, retirar_pregunta
+
     if evento.type == pygame.KEYDOWN and datos_indiv["estado"] == "Ingreso":
         if evento.key == pygame.K_BACKSPACE:
             datos_indiv["usuario"] = borrar_letra(datos_indiv["usuario"])
             datos_indiv["mensaje_error"] = ""
         elif evento.key == pygame.K_RETURN:
-            if verificar_nombre(datos_indiv["usuario"]):
-                datos_indiv["estado"] = "Jugar"
-                indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
-                datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
-                datos_indiv["mensaje_error"] = ""
-            else:
-                datos_indiv["mensaje_error"] = "No puede usar este nombre"
+            validar_usuario(datos_indiv)
         else:
             datos_indiv["mensaje_error"] = modificar_mensaje(evento.unicode, verificar_alnum)
             if datos_indiv["mensaje_error"] == "":
