@@ -4,7 +4,7 @@ def salir(evento, datos_individuales: dict) -> None:
     if evento.type == pygame.QUIT:
         datos_individuales["seguir"] = False
 
-def introducir_timer(evento, tick, sonido_click, contador_ref: dict[str, str], datos_individuales: dict, datos_base: dict, tablero: tuple[int], rects_tablero: tuple, path: str) -> None:
+def introducir_timer(evento, tick, sonido_click, contador_ref: dict[str, str], datos_indiv: dict, datos_base: dict, tablero: tuple[int], rects_tablero: tuple, path: str) -> None:
     """ Introduce un contador al juego
 
     Argumentos:
@@ -19,14 +19,16 @@ def introducir_timer(evento, tick, sonido_click, contador_ref: dict[str, str], d
         path (str): El path CSV
     """
     from Modulos.datos_jugador import reiniciar_contador 
-    if evento.type == tick and datos_individuales["estado"] == "Jugar":
-        contador_ref["valor"] = str(int(contador_ref["valor"]) - 1)
-        if int(contador_ref["valor"]) == 0 and datos_individuales["respuesta"] == None:
-            datos_individuales["respuesta"] = "d"
+    if evento.type == tick and datos_indiv["estado"] == "Jugar":
+        contador_ref["valor"] = str(int(contador_ref["valor"]) - 1) # El contador menos 1
+
+        # Si el contador llega a 0 y no hubo respuesta
+        if int(contador_ref["valor"]) == 0 and datos_indiv["respuesta"] == datos_base["respuesta"]:
+            datos_indiv["respuesta"] = "d" # Una respuesta incorrecta 
             sonido_click.play()
-            procesar_usuario(datos_individuales, tablero, rects_tablero, path)
-            contador_ref["valor"] = reiniciar_contador(datos_base["contador"])
-            datos_individuales["respuesta"] = datos_base["respuesta"]
+            procesar_usuario(datos_indiv, tablero, rects_tablero, path) # Se procesa la respuesta incorrecta y aplica lo suyo
+            contador_ref["valor"] = reiniciar_contador(datos_base["contador"]) # Por cada respuesta hecha el contador se reinicia
+            datos_indiv["respuesta"] = datos_base["respuesta"] # Osea, vuelve a ser None (una respuesta vacia)
 
 def clickeo_en(rect: pygame.Rect, pos: tuple[int, int], sonido) -> bool:
     """ Determina si colisiona un rect en determinada posicion
@@ -56,6 +58,17 @@ def resetear_datos(datos_indiv: dict, datos_base: dict) -> None:
     for clave in datos_indiv:
         datos_indiv[clave] = copy.deepcopy(datos_base[clave])
 
+def actualizar_preguntas(datos_indiv: dict) -> None:
+    """ Actualiza el diccionario de preguntas del usuario
+
+    Argumento:
+        datos_indiv (dict): Los datos individuales del usuario
+    """
+    import random
+    from Datos.funciones_consola import retirar_pregunta
+    indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
+    datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
+
 def procesar_usuario(datos_indiv: dict, tablero: tuple[int], rects_tablero: tuple, path: str) -> None:
     """ Procesa los datos del usuario y aplica las posiciones/estados correspondientes
 
@@ -65,15 +78,13 @@ def procesar_usuario(datos_indiv: dict, tablero: tuple[int], rects_tablero: tupl
         rects_tablero (tuple): Los rects del tablero en pantalla
         path (str): El path CSV
     """
-    from Datos.funciones_consola import verificar_respuesta, modificar_posicion, verificar_ganador_perdedor_pygame, retirar_pregunta, ingresar_datos_usuario
-    import random
-    datos_indiv["posicion"] = modificar_posicion(tablero, datos_indiv["posicion"], verificar_respuesta(datos_indiv["pregunta_actual"], datos_indiv["respuesta"]))
-    datos_indiv["rect_posicion"] = rects_tablero[datos_indiv["posicion"]]
-    limite = verificar_ganador_perdedor_pygame(datos_indiv["posicion"], tablero)
+    from Datos.funciones_consola import verificar_respuesta, modificar_posicion, verificar_ganador_perdedor_pygame, ingresar_datos_usuario
+    datos_indiv["posicion"] = modificar_posicion(tablero, datos_indiv["posicion"], verificar_respuesta(datos_indiv["pregunta_actual"], datos_indiv["respuesta"])) # Mopdifica la posicion del usuario
+    datos_indiv["rect_posicion"] = rects_tablero[datos_indiv["posicion"]] # Mueve al steve de pantalla según la posicion del usuario
 
-    if len(datos_indiv["copia_preguntas"]) > 0 and not limite:
-        indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
-        datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
+    # Si todavía quedan preguntas y el jugador no ganó ni perdió
+    if len(datos_indiv["copia_preguntas"]) > 0 and not verificar_ganador_perdedor_pygame(datos_indiv["posicion"], tablero):
+        actualizar_preguntas(datos_indiv)
     else:
         ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
         datos_indiv["estado"] = "Puntaje"
@@ -161,11 +172,12 @@ def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, 
                 ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
                 datos_indiv["estado"] = "Puntaje"
                 return None # Para que no siga el programa
-
+            
+            # Si todavia existen preguntas y la respuesta es valida (porque sinó interpreta todos los clicks)
             if datos_indiv["pregunta_actual"] != datos_base["pregunta_actual"] and verificar_opcion(datos_indiv["respuesta"], ("a","b","c")):
-                procesar_usuario(datos_indiv, tablero, rects_tablero, path)
-                datos_indiv["respuesta"] = datos_base["respuesta"]
-                contador_ref["valor"] = reiniciar_contador(datos_base["contador"])
+                procesar_usuario(datos_indiv, tablero, rects_tablero, path) 
+                datos_indiv["respuesta"] = datos_base["respuesta"] # Osea, vuelve a ser None (una respuesta vacia)
+                contador_ref["valor"] = reiniciar_contador(datos_base["contador"]) # Por cada respuesta hecha el contador se reinicia
 
 ####################################################################################################################################################################################
 
@@ -183,18 +195,26 @@ def borrar_letra(usuario: str) -> str:
     return usuario[:-1]
 
 def validar_usuario(datos_indiv: dict) -> None:
-    """ Analiza al usuario ingresado
+    """ Valida el usuario
 
     Argumentos:
         datos_indiv (dict): Los datos individuales del usuario
     """
     import random
-    from Datos.funciones_consola import verificar_nombre, retirar_pregunta
+    from Datos.funciones_consola import retirar_pregunta
+    datos_indiv["estado"] = "Jugar"
+    actualizar_preguntas(datos_indiv)
+    datos_indiv["mensaje_error"] = ""
+
+def analizar_usuario(datos_indiv: dict) -> None:
+    """ Analiza al usuario ingresado
+
+    Argumentos:
+        datos_indiv (dict): Los datos individuales del usuario
+    """
+    from Datos.funciones_consola import verificar_nombre
     if verificar_nombre(datos_indiv["usuario"]):
-        datos_indiv["estado"] = "Jugar"
-        indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
-        datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
-        datos_indiv["mensaje_error"] = ""
+        validar_usuario(datos_indiv)
     else:
         datos_indiv["mensaje_error"] = "No puede usar este nombre"
 
@@ -223,23 +243,34 @@ def modificar_mensaje(caracter: str, verificacion: callable) -> str:
         mensaje = "Caracter no valido"
     return mensaje
 
+def agregar_caracter(cadena: str, caracter: str) -> str:
+    """ Agrega un caracter a una cadena
+
+    Argumentos:
+        cadena (str): Cadena a modificar
+        caracter (str): El caracter a agregar
+
+    Retorna:
+        str: La cadena modificada
+    """
+    cadena_modificada = cadena + caracter
+    return cadena_modificada
+
 def interactuar_ingreso_teclado(evento, datos_indiv: dict) -> None:
     """ Interactua con el teclado cuando el estado es "Ingreso" y determina estados
 
     Argumentos:
         evento (_type_): El evento actual
-        datos_indiv (dict): Los datos individuales del usuario
-    """
-
+        datos_indiv (dict): Los datos individuales del usuario"""
     if evento.type == pygame.KEYDOWN and datos_indiv["estado"] == "Ingreso":
         if evento.key == pygame.K_BACKSPACE:
             datos_indiv["usuario"] = borrar_letra(datos_indiv["usuario"])
-            datos_indiv["mensaje_error"] = ""
+            datos_indiv["mensaje_error"] = "" # Borra el error para que no se muestre en pantalla
         elif evento.key == pygame.K_RETURN:
-            validar_usuario(datos_indiv)
-        else:
-            datos_indiv["mensaje_error"] = modificar_mensaje(evento.unicode, verificar_alnum)
+            analizar_usuario(datos_indiv)
+        else: 
+            datos_indiv["mensaje_error"] = modificar_mensaje(evento.unicode, verificar_alnum) # Actualiza el mensaje según un criterio
             if datos_indiv["mensaje_error"] == "":
-                datos_indiv["usuario"] += evento.unicode
+                datos_indiv["usuario"] = agregar_caracter(datos_indiv["usuario"], evento.unicode)
 
 ####################################################################################################################################################################################
