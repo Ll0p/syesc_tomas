@@ -56,6 +56,28 @@ def resetear_datos(datos_indiv: dict, datos_base: dict) -> None:
     for clave in datos_indiv:
         datos_indiv[clave] = copy.deepcopy(datos_base[clave])
 
+def procesar_usuario(datos_indiv: dict, tablero: tuple[int], rects_tablero: tuple, path: str) -> None:
+    """ Procesa los datos del usuario y aplica las posiciones/estados correspondientes
+
+    Argumentoss:
+        datos_indiv (dict): Los datos individuales del usuario
+        tablero (tuple[int]): El tablero del juego
+        rects_tablero (tuple): Los rects del tablero en pantalla
+        path (str): El path CSV
+    """
+    from Datos.funciones_consola import verificar_respuesta, modificar_posicion, verificar_ganador_perdedor_pygame, retirar_pregunta, ingresar_datos_usuario
+    import random
+    datos_indiv["posicion"] = modificar_posicion(tablero, datos_indiv["posicion"], verificar_respuesta(datos_indiv["pregunta_actual"], datos_indiv["respuesta"]))
+    datos_indiv["rect_posicion"] = rects_tablero[datos_indiv["posicion"]]
+    limite = verificar_ganador_perdedor_pygame(datos_indiv["posicion"], tablero)
+
+    if len(datos_indiv["copia_preguntas"]) > 0 and not limite:
+        indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
+        datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
+    else:
+        ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
+        datos_indiv["estado"] = "Puntaje"
+
 ################################### INTERACCIÓN_MOUSE ####################################
 
 def interaccion_mouse_menu(rects_menu: dict, evento, sonido_click, datos_indiv: dict) -> None:
@@ -99,28 +121,6 @@ def interaccion_mouse_puntaje(rect_salida, evento, sonido_click, datos_indiv: di
     """
     if clickeo_en(rect_salida, evento.pos, sonido_click):
         resetear_datos(datos_indiv, datos_base)
-
-def procesar_usuario(datos_indiv: dict, tablero: tuple[int], rects_tablero: tuple, path: str) -> None:
-    """ Procesa los datos del usuario y aplica las posiciones/estados correspondientes
-
-    Argumentoss:
-        datos_indiv (dict): Los datos individuales del usuario
-        tablero (tuple[int]): El tablero del juego
-        rects_tablero (tuple): Los rects del tablero en pantalla
-        path (str): El path CSV
-    """
-    from Datos.funciones_consola import verificar_respuesta, modificar_posicion, verificar_ganador_perdedor_pygame, retirar_pregunta, ingresar_datos_usuario
-    import random
-    datos_indiv["posicion"] = modificar_posicion(tablero, datos_indiv["posicion"], verificar_respuesta(datos_indiv["pregunta_actual"], datos_indiv["respuesta"]))
-    datos_indiv["rect_posicion"] = rects_tablero[datos_indiv["posicion"]]
-    limite = verificar_ganador_perdedor_pygame(datos_indiv["posicion"], tablero)
-
-    if len(datos_indiv["copia_preguntas"]) > 0 and not limite:
-        indice = random.randint(0, len(datos_indiv["copia_preguntas"]) - 1)
-        datos_indiv["pregunta_actual"] = retirar_pregunta(datos_indiv["copia_preguntas"], indice)
-    else:
-        ingresar_datos_usuario(path, datos_indiv["usuario"], datos_indiv["posicion"])
-        datos_indiv["estado"] = "Puntaje"
 
 def interaccion_mouse(evento, rects_menu: dict, rects_juego: dict, rect_salida, sonido_click, tablero: tuple[int], path: str, datos_indiv: dict, datos_base: dict, rects_tablero: tuple, contador_ref: dict[str, str]) -> None:
     """ Interpreta todas las interacciones con el mouse en los diferentes estados y aplica cambios en base a esto
